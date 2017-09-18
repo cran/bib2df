@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Philipp Ottolinger" />
+
+<meta name="date" content="2017-09-17" />
+
+<title>bib2df - Parse a BibTeX file to a data.frame</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">bib2df - Parse a BibTeX file to a data.frame</h1>
+<h4 class="author"><em>Philipp Ottolinger</em></h4>
+<h4 class="date"><em>2017-09-17</em></h4>
+
+
+
+<div id="bibtex" class="section level2">
+<h2>BibTeX</h2>
+<p>BibTeX is typically used together with LaTeX to manage references. The BibTeX file format is simple as it follows rather simple but strict rules and represents a reference’s core data as a list of partly mandatory fields.</p>
+<p>The resulting BibTeX file can tell much about the work you use it for, may it be an academic paper, a dissertation or any other report that at least partly appoints to the work of others. The average age of the referenced works might tell if one addresses to a current topic or if one digs into the history of a certain field. Does one cite many works of just a few authors or occurs every author at most once? The BibTeX file is definitely able to answer these questions.</p>
+</div>
+<div id="why-bib2df" class="section level2">
+<h2>Why bib2df?</h2>
+<p>As mentioned above, BibTeX represents the entries as lists of named fields, some kind of similar to the <code>JSON</code> format. If you want to gain insights from your BibTeX file using R, you will have to transform the data to fit into a more usual data structure. Such a data structure, speaking of R, is the <code>tibble</code>. <code>bib2df</code> does exactly this: It takes a BibTeX file and parses it into a <code>tibble</code> so you can work with your bibliographic data just the way you do with other data.</p>
+<p>Given this <code>tibble</code> you can manipulate entries in a familiar way and write the updated references back to a valid BibTeX file.</p>
+</div>
+<div id="how-to-use" class="section level2">
+<h2>How to use</h2>
+<div id="parse-the-bibtex-file" class="section level3">
+<h3>Parse the BibTeX file</h3>
+<p>To parse a BibTeX file to a <code>tibble</code> you may want to use the function <code>bib2df()</code>. The first argument of <code>bib2df()</code> is the path to the file you want to parse. If you obtain your file from an URL, use the URL as the path.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;bib2df&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(bib2df)
+
+url &lt;-<span class="st"> &quot;https://gist.githubusercontent.com/ottlngr/d709ab6c7de08d133435cb8c77699914/raw/153f2ec0be6d36c7dd9fa3389cc87f54ecf4da04/LiteratureOnCommonKnowledgeInGameTheory.bib&quot;</span>
+
+df &lt;-<span class="st"> </span><span class="kw">bib2df</span>(url)
+df</code></pre></div>
+<pre><code>## # A tibble: 37 x 27
+##        CATEGORY               BIBTEXKEY   ADDRESS ANNOTE    AUTHOR
+##           &lt;chr&gt;                   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;    &lt;list&gt;
+##  1      ARTICLE               Arrow1986      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  2      ARTICLE AumannBrandenburger1995      &lt;NA&gt;   &lt;NA&gt; &lt;chr [2]&gt;
+##  3      ARTICLE              Aumann1976      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  4 INCOLLECTION           Bacharach1992 Cambridge   &lt;NA&gt; &lt;chr [1]&gt;
+##  5      ARTICLE                Basu1988      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  6      ARTICLE            Bernheim1984      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  7      ARTICLE           Bicchieri1989      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  8      ARTICLE             Binmore2008      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  9      ARTICLE       Brandenburger1992      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 10 INCOLLECTION  BrandenburgerDekel1989  New York   &lt;NA&gt; &lt;chr [2]&gt;
+## # ... with 27 more rows, and 22 more variables: BOOKTITLE &lt;chr&gt;,
+## #   CHAPTER &lt;chr&gt;, CROSSREF &lt;chr&gt;, EDITION &lt;chr&gt;, EDITOR &lt;list&gt;,
+## #   HOWPUBLISHED &lt;chr&gt;, INSTITUTION &lt;chr&gt;, JOURNAL &lt;chr&gt;, KEY &lt;chr&gt;,
+## #   MONTH &lt;chr&gt;, NOTE &lt;chr&gt;, NUMBER &lt;chr&gt;, ORGANIZATION &lt;chr&gt;,
+## #   PAGES &lt;chr&gt;, PUBLISHER &lt;chr&gt;, SCHOOL &lt;chr&gt;, SERIES &lt;chr&gt;, TITLE &lt;chr&gt;,
+## #   TYPE &lt;chr&gt;, VOLUME &lt;chr&gt;, YEAR &lt;dbl&gt;, DOI &lt;chr&gt;</code></pre>
+<p><code>bib2df()</code> returns a <code>tibble</code> with each row representing one entry of the initial BibTeX file while the columns hold the data originally stored in the named fields. If a field was not present in a particular entry, the respective column gets the value <code>NA</code>. As some works can be the work of multiple authors or editors, these fields are converted to a list to avoid having the names of multiple persons concatenated to a single character string:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(df<span class="op">$</span>AUTHOR)</code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;Arrow, Kenneth J.&quot;
+## 
+## [[2]]
+## [1] &quot;Aumann, Robert&quot;      &quot;Brandenburger, Adam&quot;
+## 
+## [[3]]
+## [1] &quot;Aumann, Robert J.&quot;
+## 
+## [[4]]
+## [1] &quot;Bacharach, Michael&quot;
+## 
+## [[5]]
+## [1] &quot;Basu, Kaushik&quot;
+## 
+## [[6]]
+## [1] &quot;Bernheim, B. Douglas&quot;</code></pre>
+<p>The second argument of <code>bib2df()</code> is <code>separate_names</code> and calls, if <code>TRUE</code>, the functionality of the <code>humaniformat</code> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> package to automatically split persons’ names into pieces:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">bib2df</span>(url, <span class="dt">separate_names =</span> <span class="ot">TRUE</span>)
+<span class="kw">head</span>(df<span class="op">$</span>AUTHOR)</code></pre></div>
+<pre><code>## [[1]]
+##   salutation first_name middle_name last_name suffix        full_name
+## 1       &lt;NA&gt;    Kenneth          J.     Arrow   &lt;NA&gt; Kenneth J. Arrow
+## 
+## [[2]]
+##   salutation first_name middle_name     last_name suffix
+## 1       &lt;NA&gt;     Robert        &lt;NA&gt;        Aumann   &lt;NA&gt;
+## 2       &lt;NA&gt;       Adam        &lt;NA&gt; Brandenburger   &lt;NA&gt;
+##            full_name
+## 1      Robert Aumann
+## 2 Adam Brandenburger
+## 
+## [[3]]
+##   salutation first_name middle_name last_name suffix        full_name
+## 1       &lt;NA&gt;     Robert          J.    Aumann   &lt;NA&gt; Robert J. Aumann
+## 
+## [[4]]
+##   salutation first_name middle_name last_name suffix         full_name
+## 1       &lt;NA&gt;    Michael        &lt;NA&gt; Bacharach   &lt;NA&gt; Michael Bacharach
+## 
+## [[5]]
+##   salutation first_name middle_name last_name suffix    full_name
+## 1       &lt;NA&gt;    Kaushik        &lt;NA&gt;      Basu   &lt;NA&gt; Kaushik Basu
+## 
+## [[6]]
+##   salutation first_name middle_name last_name suffix           full_name
+## 1       &lt;NA&gt;         B.     Douglas  Bernheim   &lt;NA&gt; B. Douglas Bernheim</code></pre>
+</div>
+<div id="parsing-multiple-bibtex-files" class="section level3">
+<h3>Parsing multiple BibTex files</h3>
+<p>Multiple BibTeX files can be parsed using <code>lapply()</code>. The paths to the BibTeX files must be stored in a vector. Using this vector to call <code>bib2df()</code> within <code>lapply()</code> results in a list of <code>tibble</code>, which can be bound, e.g. using <code>bind_rows()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">paths &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;https://gist.githubusercontent.com/ottlngr/d709ab6c7de08d133435cb8c77699914/raw/153f2ec0be6d36c7dd9fa3389cc87f54ecf4da04/LiteratureOnCommonKnowledgeInGameTheory.bib&quot;</span>, <span class="st">&quot;https://raw.githubusercontent.com/ottlngr/bib2df/master/inst/extdata/biblio.bib&quot;</span>)
+
+x &lt;-<span class="st"> </span><span class="kw">lapply</span>(paths, bib2df)
+<span class="kw">class</span>(x)</code></pre></div>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(x)</code></pre></div>
+<pre><code>## [[1]]
+## # A tibble: 37 x 27
+##        CATEGORY               BIBTEXKEY   ADDRESS ANNOTE    AUTHOR
+##           &lt;chr&gt;                   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;    &lt;list&gt;
+##  1      ARTICLE               Arrow1986      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  2      ARTICLE AumannBrandenburger1995      &lt;NA&gt;   &lt;NA&gt; &lt;chr [2]&gt;
+##  3      ARTICLE              Aumann1976      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  4 INCOLLECTION           Bacharach1992 Cambridge   &lt;NA&gt; &lt;chr [1]&gt;
+##  5      ARTICLE                Basu1988      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  6      ARTICLE            Bernheim1984      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  7      ARTICLE           Bicchieri1989      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  8      ARTICLE             Binmore2008      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+##  9      ARTICLE       Brandenburger1992      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 10 INCOLLECTION  BrandenburgerDekel1989  New York   &lt;NA&gt; &lt;chr [2]&gt;
+## # ... with 27 more rows, and 22 more variables: BOOKTITLE &lt;chr&gt;,
+## #   CHAPTER &lt;chr&gt;, CROSSREF &lt;chr&gt;, EDITION &lt;chr&gt;, EDITOR &lt;list&gt;,
+## #   HOWPUBLISHED &lt;chr&gt;, INSTITUTION &lt;chr&gt;, JOURNAL &lt;chr&gt;, KEY &lt;chr&gt;,
+## #   MONTH &lt;chr&gt;, NOTE &lt;chr&gt;, NUMBER &lt;chr&gt;, ORGANIZATION &lt;chr&gt;,
+## #   PAGES &lt;chr&gt;, PUBLISHER &lt;chr&gt;, SCHOOL &lt;chr&gt;, SERIES &lt;chr&gt;, TITLE &lt;chr&gt;,
+## #   TYPE &lt;chr&gt;, VOLUME &lt;chr&gt;, YEAR &lt;dbl&gt;, DOI &lt;chr&gt;
+## 
+## [[2]]
+## # A tibble: 3 x 26
+##       CATEGORY              BIBTEXKEY  ADDRESS ANNOTE    AUTHOR
+##          &lt;chr&gt;                  &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;    &lt;list&gt;
+## 1      ARTICLE            Binmore2008     &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 2         BOOK            Osborne1994     &lt;NA&gt;   &lt;NA&gt; &lt;chr [2]&gt;
+## 3 INCOLLECTION BrandenburgerDekel1989 New York   &lt;NA&gt; &lt;chr [2]&gt;
+## # ... with 21 more variables: BOOKTITLE &lt;chr&gt;, CHAPTER &lt;chr&gt;,
+## #   CROSSREF &lt;chr&gt;, EDITION &lt;chr&gt;, EDITOR &lt;list&gt;, HOWPUBLISHED &lt;chr&gt;,
+## #   INSTITUTION &lt;chr&gt;, JOURNAL &lt;chr&gt;, KEY &lt;chr&gt;, MONTH &lt;chr&gt;, NOTE &lt;chr&gt;,
+## #   NUMBER &lt;chr&gt;, ORGANIZATION &lt;chr&gt;, PAGES &lt;chr&gt;, PUBLISHER &lt;chr&gt;,
+## #   SCHOOL &lt;chr&gt;, SERIES &lt;chr&gt;, TITLE &lt;chr&gt;, TYPE &lt;chr&gt;, VOLUME &lt;chr&gt;,
+## #   YEAR &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">bind_rows</span>(x)
+<span class="kw">class</span>(res)</code></pre></div>
+<pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(res)</code></pre></div>
+<pre><code>## # A tibble: 6 x 27
+##       CATEGORY               BIBTEXKEY   ADDRESS ANNOTE    AUTHOR
+##          &lt;chr&gt;                   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;    &lt;list&gt;
+## 1      ARTICLE               Arrow1986      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 2      ARTICLE AumannBrandenburger1995      &lt;NA&gt;   &lt;NA&gt; &lt;chr [2]&gt;
+## 3      ARTICLE              Aumann1976      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 4 INCOLLECTION           Bacharach1992 Cambridge   &lt;NA&gt; &lt;chr [1]&gt;
+## 5      ARTICLE                Basu1988      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## 6      ARTICLE            Bernheim1984      &lt;NA&gt;   &lt;NA&gt; &lt;chr [1]&gt;
+## # ... with 22 more variables: BOOKTITLE &lt;chr&gt;, CHAPTER &lt;chr&gt;,
+## #   CROSSREF &lt;chr&gt;, EDITION &lt;chr&gt;, EDITOR &lt;list&gt;, HOWPUBLISHED &lt;chr&gt;,
+## #   INSTITUTION &lt;chr&gt;, JOURNAL &lt;chr&gt;, KEY &lt;chr&gt;, MONTH &lt;chr&gt;, NOTE &lt;chr&gt;,
+## #   NUMBER &lt;chr&gt;, ORGANIZATION &lt;chr&gt;, PAGES &lt;chr&gt;, PUBLISHER &lt;chr&gt;,
+## #   SCHOOL &lt;chr&gt;, SERIES &lt;chr&gt;, TITLE &lt;chr&gt;, TYPE &lt;chr&gt;, VOLUME &lt;chr&gt;,
+## #   YEAR &lt;dbl&gt;, DOI &lt;chr&gt;</code></pre>
+</div>
+</div>
+<div id="analyze-and-visualize-your-references" class="section level2">
+<h2>Analyze and visualize your references</h2>
+<p>Since the BibTeX entries are now converted to rows and columns in a <code>tibble</code>, one can start to analyze and visualize the data with common tools like <code>ggplot2</code>, <code>dplyr</code> and <code>tidyr</code>.</p>
+<p>For example, one can ask which journal is cited most among the references</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)
+
+df <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(JOURNAL)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(JOURNAL) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">n =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(n)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">slice</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>)</code></pre></div>
+<pre><code>## # A tibble: 3 x 2
+##                                JOURNAL     n
+##                                  &lt;chr&gt; &lt;int&gt;
+## 1                         Econometrica     4
+## 2          Games and Economic Behavior     2
+## 3 International Journal of Game Theory     2</code></pre>
+<p>or what the median age of the cited works is:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">age =</span> <span class="dv">2017</span> <span class="op">-</span><span class="st"> </span>YEAR) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">m =</span> <span class="kw">median</span>(age))</code></pre></div>
+<pre><code>## # A tibble: 1 x 1
+##       m
+##   &lt;dbl&gt;
+## 1    31</code></pre>
+<p>Also plotting is possible:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(YEAR, AUTHOR) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">aes</span>(<span class="dt">x =</span> YEAR, <span class="dt">y =</span> <span class="kw">reorder</span>(full_name, <span class="kw">desc</span>(YEAR))) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="manipulate-your-references" class="section level2">
+<h2>Manipulate your references</h2>
+<p>Since all the BibTeX entries are represented by rows in a <code>tibble</code>, manipulating the BibTeX entries is now easily possible.</p>
+<p>One of the authors of the 10th reference in our file does not have his full first name:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>AUTHOR[[<span class="dv">10</span>]]</code></pre></div>
+<pre><code>##   salutation first_name middle_name     last_name suffix
+## 1       &lt;NA&gt;       Adam        &lt;NA&gt; Brandenburger   &lt;NA&gt;
+## 2       &lt;NA&gt;         E.        &lt;NA&gt;         Dekel   &lt;NA&gt;
+##            full_name
+## 1 Adam Brandenburger
+## 2           E. Dekel</code></pre>
+<p>The ‘E.’ in ‘E. Dekel’ is for Eddie, so lets change the value of that field:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>AUTHOR[[<span class="dv">10</span>]]<span class="op">$</span>first_name[<span class="dv">2</span>] &lt;-<span class="st"> &quot;Eddie&quot;</span>
+df<span class="op">$</span>AUTHOR[[<span class="dv">10</span>]]<span class="op">$</span>full_name[<span class="dv">2</span>] &lt;-<span class="st"> &quot;Eddie Dekel&quot;</span>
+
+df<span class="op">$</span>AUTHOR[[<span class="dv">10</span>]]</code></pre></div>
+<pre><code>##   salutation first_name middle_name     last_name suffix
+## 1       &lt;NA&gt;       Adam        &lt;NA&gt; Brandenburger   &lt;NA&gt;
+## 2       &lt;NA&gt;      Eddie        &lt;NA&gt;         Dekel   &lt;NA&gt;
+##            full_name
+## 1 Adam Brandenburger
+## 2        Eddie Dekel</code></pre>
+</div>
+<div id="write-back-to-bibtex" class="section level2">
+<h2>Write back to BibTeX</h2>
+<p>Especially when single values of the parsed BibTeX file were changed it is useful to write the parsed <code>tibble</code> back to a valid BibTeX file one can use in combination with LaTeX. Just like <code>bib2df()</code> parses a BibTeX file, <code>df2bib()</code> writes a BibTeX file:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newFile &lt;-<span class="st"> </span><span class="kw">tempfile</span>()
+<span class="kw">df2bib</span>(df, <span class="dt">file =</span> newFile)</code></pre></div>
+<p>The just written BibTeX file of course contains the values, we just changed in the <code>tibble</code>:</p>
+<pre><code>@Incollection{BrandenburgerDekel1989,
+  Address = {New York},
+  Author = {Brandenburger, Adam and Dekel, Eddie},
+  Booktitle = {The Economics of Missing Markets, Information and Games},
+  Chapter = {3},
+  Pages = {46 - 61},
+  Publisher = {Oxford University Press},
+  Title = {The Role of Common Knowledge Assumptions in Game Theory},
+  Year = {1989}
+}</code></pre>
+<p>To append BibTeX entries to an existing file use <code>append = TRUE</code> within <code>df2bib()</code>.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://CRAN.R-project.org/package=humaniformat" class="uri">https://CRAN.R-project.org/package=humaniformat</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

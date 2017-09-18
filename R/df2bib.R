@@ -1,28 +1,45 @@
-#' @title Export a BibTeX data.frame to a .bib file.
-#' @description The BibTeX data.frame is written to a .bib file
-#' @param x data.frame, returned by \code{\link{df2bib}}.
+#' @title Export a BibTeX \code{tibble} to a .bib file
+#' @description The BibTeX \code{tibble} is written to a .bib file
+#' @param x \code{tibble}, returned by \code{\link{df2bib}}.
 #' @param file character, path to a .bib file.
+#' @param append logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.
 #' @return \code{file} as a character string, invisibly.
 #' @author Thomas J. Leeper
+#' @references \url{http://www.bibtex.org/Format/}
 #' @examples
+#' # Read from .bib file:
 #' path <- system.file("extdata", "biblio.bib", package = "bib2df")
 #' bib <- bib2df(path)
-#' df2bib(bib, bib2 <- tempfile())
-#' identical(bib, bib2df(bib2))
+#'
+#' # Write to .bib file:
+#' bibFile <- tempfile()
+#' df2bib(bib, bibFile)
+#'
+#' # Use `append = TRUE` to add lines to an existing .bib file:
+#' df2bib(bib, bibFile, append = TRUE)
 #' @seealso \code{\link{bib2df}}
 #' @export
-df2bib <- function(x, file) {
-  capitalize <- function(string) {
-    paste0(substr(string, 1, 1),
-           tolower(substr(string, 2, nchar(string) )))
+df2bib <- function(x, file, append = FALSE) {
+
+  if (!is.character(file)) {
+    stop("Invalid file path: Non-character supplied.", call. = FALSE)
   }
-  naReplace <- function(df) {
-    df[is.na(df)] <- ""
-    return(df)
+  if (as.numeric(file.access(dirname(file), mode = 2)) != 0) {
+    stop("Invalid file path: File is not writeable.", call. = FALSE)
   }
+
   if (class(x$AUTHOR[[1]]) == "data.frame") {
-    x$AUTHOR <- lapply(x$AUTHOR, naReplace)
-    x$AUTHOR <- lapply(x$AUTHOR, function(x) paste(x$last_name, ", ", x$first_name, " ", x$middle_name, sep = ""))
+    x$AUTHOR <- lapply(x$AUTHOR, na_replace)
+    x$AUTHOR <- lapply(x$AUTHOR,
+                       function(x) {
+                         paste(x$last_name,
+                               ", ",
+                               x$first_name,
+                               " ",
+                               x$middle_name,
+                               sep = "")
+                         }
+                       )
     x$AUTHOR <- lapply(x$AUTHOR, trimws)
   }
 
@@ -45,8 +62,22 @@ df2bib <- function(x, file) {
     }
     rowfields <- rowfields[lengths(rowfields) > 0]
     rowfields <- rowfields[!names(rowfields) %in% c("Category", "Bibtexkey")]
-    paste0("  ", names(rowfields), " = {", unname(unlist(rowfields)), "}", collapse = ",\n")
+    paste0("  ",
+           names(rowfields),
+           " = {",
+           unname(unlist(rowfields)),
+           "}",
+           collapse = ",\n")
   })
-  cat(paste0("@", capitalize(x$Category), "{", x$Bibtexkey, ",\n", unlist(fields), "\n}\n", collapse = "\n\n"), file = file)
+  cat(paste0("@",
+             capitalize(x$Category),
+             "{",
+             x$Bibtexkey,
+             ",\n",
+             unlist(fields),
+             "\n}\n",
+             collapse = "\n\n"),
+      file = file,
+      append = append)
   invisible(file)
 }

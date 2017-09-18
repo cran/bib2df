@@ -2,26 +2,37 @@
 % Please edit documentation in R/df2bib.R
 \name{df2bib}
 \alias{df2bib}
-\title{Export a BibTeX data.frame to a .bib file.}
+\title{Export a BibTeX \code{tibble} to a .bib file}
 \usage{
-df2bib(x, file)
+df2bib(x, file, append = FALSE)
 }
 \arguments{
-\item{x}{data.frame, returned by \code{\link{df2bib}}.}
+\item{x}{\code{tibble}, returned by \code{\link{df2bib}}.}
 
 \item{file}{character, path to a .bib file.}
+
+\item{append}{logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.}
 }
 \value{
 \code{file} as a character string, invisibly.
 }
 \description{
-The BibTeX data.frame is written to a .bib file
+The BibTeX \code{tibble} is written to a .bib file
 }
 \examples{
+# Read from .bib file:
 path <- system.file("extdata", "biblio.bib", package = "bib2df")
 bib <- bib2df(path)
-df2bib(bib, bib2 <- tempfile())
-identical(bib, bib2df(bib2))
+
+# Write to .bib file:
+bibFile <- tempfile()
+df2bib(bib, bibFile)
+
+# Use `append = TRUE` to add lines to an existing .bib file:
+df2bib(bib, bibFile, append = TRUE)
+}
+\references{
+\url{http://www.bibtex.org/Format/}
 }
 \seealso{
 \code{\link{bib2df}}

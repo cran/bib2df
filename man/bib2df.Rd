@@ -2,27 +2,35 @@
 % Please edit documentation in R/bib2df.R
 \name{bib2df}
 \alias{bib2df}
-\title{Parse a BibTeX file to a \code{data.frame}..}
+\title{Parse a BibTeX file to a \code{tibble}}
 \usage{
-bib2df(file, separate_names = c(FALSE, TRUE))
+bib2df(file, separate_names = FALSE)
 }
 \arguments{
-\item{file}{character, path to a .bib file.}
+\item{file}{character, path or URL to a .bib file.}
 
 \item{separate_names}{logical, should authors' and editors' names be separated into first and given name?}
 }
 \value{
-A \code{data.frame}.
+A \code{tibble}.
 }
 \description{
-The BibTeX file is read, parsed, tidied and written to a \code{data.frame}..
+The BibTeX file is read, parsed, tidied and written to a \code{tibble}
 }
 \details{
-Uses the internal \code{bib2df_read()}, \code{bib2df_gather()} and \code{bib2df_tidy()}. No magic, just a wrapper.
+For simplicity \code{bib2df()} unifies the reading, parsing and tidying of a BibTeX file while being aware of a standardized output format, different BibTeX styles and missing values in the BibTeX file.
+
+When \code{separate_names = TRUE}, the respective columns contain a \code{data.frame} for each row. When \code{FALSE}, the respective columns contain character strings.
 }
 \examples{
+# Read from .bib file:
 path <- system.file("extdata", "biblio.bib", package = "bib2df")
-bib2df(path)
+bib <- bib2df(path)
+str(bib)
+
+# Read from .bib file and separate authors' and editors' names:
+bib <- bib2df(path, separate_names = TRUE)
+str(bib)
 }
 \seealso{
 \code{\link{df2bib}}
