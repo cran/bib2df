@@ -15,6 +15,23 @@ test_that("bib has correct dimensions", {
   expect_true(ncol(bib) >= 25L)
 })
 
+context("Import .bib with one entry to tibble")
+
+bib1 <- bib2df(system.file("extdata", "biblio_one_entry.bib", package = "bib2df"))
+
+test_that("bib imported as tibble", {
+  expect_true(inherits(bib1, "tbl"))
+})
+
+test_that("bib has correct names", {
+  expect_true(all(names(bib2df:::empty) %in% names(bib1)))
+})
+
+test_that("bib has correct dimensions", {
+  expect_true(nrow(bib1) == 1L)
+  expect_true(ncol(bib1) >= 25L)
+})
+
 context("Export .tbl to .bib")
 
 test_that("df2bib() works", {
@@ -50,7 +67,7 @@ test_that("bib2df() throws error messages", {
   expect_error(bib2df("/a/n/y/where/any.bib"),
                "Invalid file path: File is not readable.",
                fixed = TRUE)
-  expect_error(bib2df("https://www.ottlngr.de/data/x.bib"),
+  expect_error(bib2df("https://www.example.com/data/x.bib"),
                "Invalid URL: File is not readable.",
                fixed = TRUE)
 })
