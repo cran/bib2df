@@ -10,20 +10,22 @@ knitr::opts_chunk$set(
 ## ------------------------------------------------------------------------
 library(bib2df)
 
-url <- "https://gist.githubusercontent.com/ottlngr/d709ab6c7de08d133435cb8c77699914/raw/153f2ec0be6d36c7dd9fa3389cc87f54ecf4da04/LiteratureOnCommonKnowledgeInGameTheory.bib"
+path <- system.file("extdata", "LiteratureOnCommonKnowledgeInGameTheory.bib", package = "bib2df")
 
-df <- bib2df(url)
+df <- bib2df(path)
 df
 
 ## ------------------------------------------------------------------------
 head(df$AUTHOR)
 
 ## ------------------------------------------------------------------------
-df <- bib2df(url, separate_names = TRUE)
+df <- bib2df(path, separate_names = TRUE)
 head(df$AUTHOR)
 
 ## ------------------------------------------------------------------------
-paths <- c("https://gist.githubusercontent.com/ottlngr/d709ab6c7de08d133435cb8c77699914/raw/153f2ec0be6d36c7dd9fa3389cc87f54ecf4da04/LiteratureOnCommonKnowledgeInGameTheory.bib", "https://raw.githubusercontent.com/ottlngr/bib2df/master/inst/extdata/biblio.bib")
+bib1 <- system.file("extdata", "LiteratureOnCommonKnowledgeInGameTheory.bib", package = "bib2df")
+bib2 <- system.file("extdata", "r.bib", package = "bib2df")
+paths <- c(bib1, bib2)
 
 x <- lapply(paths, bib2df)
 class(x)
@@ -67,7 +69,7 @@ df$AUTHOR[[10]]$full_name[2] <- "Eddie Dekel"
 
 df$AUTHOR[[10]]
 
-## ------------------------------------------------------------------------
-newFile <- tempfile()
-df2bib(df, file = newFile)
+## ----eval=FALSE----------------------------------------------------------
+#  newFile <- tempfile()
+#  df2bib(df, file = newFile)
 

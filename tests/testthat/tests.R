@@ -1,6 +1,6 @@
 context("Import .bib to tibble")
 
-bib <- bib2df(system.file("extdata", "biblio.bib", package = "bib2df"))
+bib <- bib2df(system.file("extdata", "bib2df_testfile_3.bib", package = "bib2df"))
 
 test_that("bib imported as tibble", {
   expect_true(inherits(bib, "tbl"))
@@ -17,7 +17,7 @@ test_that("bib has correct dimensions", {
 
 context("Import .bib with one entry to tibble")
 
-bib1 <- bib2df(system.file("extdata", "biblio_one_entry.bib", package = "bib2df"))
+bib1 <- bib2df(system.file("extdata", "bib2df_testfile_2.bib", package = "bib2df"))
 
 test_that("bib imported as tibble", {
   expect_true(inherits(bib1, "tbl"))
@@ -32,13 +32,15 @@ test_that("bib has correct dimensions", {
   expect_true(ncol(bib1) >= 25L)
 })
 
-context("Export .tbl to .bib")
+# context("Export .tbl to .bib")
+#
+# test_that("df2bib() works", {
+#   expect_true(file.exists(df2bib(bib, bib2 <- tempfile())))
+#   expect_true(identical(bib, bib2df(bib2)))
+#   expect_true(identical(readChar(x <- df2bib(bib, tempfile()), 1), "@"))
+# })
 
-test_that("df2bib() works", {
-  expect_true(file.exists(df2bib(bib, bib2 <- tempfile())))
-  expect_true(identical(bib, bib2df(bib2)))
-  expect_true(identical(readChar(x <- df2bib(bib, tempfile()), 1), "@"))
-})
+context("Helper functions")
 
 test_that("capitalize() works", {
   expect_true(capitalize("TEST") == "Test")
@@ -49,6 +51,8 @@ test_that("na_replace() works", {
   df <- data.frame(a = NA, b = 1)
   expect_true(na_replace(df)$a[1] == "")
 })
+
+context("Error messages and exception handling")
 
 test_that("df2bib() throws error messages", {
   df <- data.frame()
@@ -67,12 +71,18 @@ test_that("bib2df() throws error messages", {
   expect_error(bib2df("/a/n/y/where/any.bib"),
                "Invalid file path: File is not readable.",
                fixed = TRUE)
-  expect_error(bib2df("https://www.example.com/data/x.bib"),
-               "Invalid URL: File is not readable.",
-               fixed = TRUE)
+
 })
 
 test_that("bib2df() returns 'empty' data.frame", {
   write("", t <- tempfile())
   expect_true(identical(bib2df(t), bib2df:::empty))
+})
+
+context("Allow symbols in fields, especially @ and =")
+
+test_that("bib2df() allows '@' and '=' in fields", {
+  bib <- bib2df(system.file("extdata", "bib2df_testfile_1.bib", package = "bib2df"))
+  expect_true(identical(bib$TITLE[1], "The C@C60 endohedral complex"))
+  expect_true(identical(bib$ABSTRACT[1], "Foo bar (F-st = 0.81, P < 0.001) bla bla."))
 })
