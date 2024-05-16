@@ -86,3 +86,38 @@ test_that("bib2df() allows '@' and '=' in fields", {
   expect_true(identical(bib$TITLE[1], "The C@C60 endohedral complex"))
   expect_true(identical(bib$ABSTRACT[1], "Foo bar (F-st = 0.81, P < 0.001) bla bla."))
 })
+
+context("Issue #29")
+
+test_that("Issue #29", {
+  bib <- bib2df(system.file("extdata", "bib2df_testfile_issue_29.bib", package = "bib2df"))
+  expect_true(identical(bib$TITLE[1], "A grammar of the {Kuku} {Yalanji} language of north {Queensland}"))
+  expect_true(identical(bib$ADDRESS[2], "Cambridge"))
+})
+
+context("Allow for tags with _ and without spaces before =")
+
+test_that("bib2df() allows any number of blanks before =", {
+  bib <- bib2df(system.file("extdata", "bib2df_testfile_4.bib", package = "bib2df"))
+  supplied_cols <- c("AUTHOR", "TITLE", "JOURNAL", "YEAR", "ABSTRACT")
+  expect_false(any(is.na(bib[supplied_cols])))
+})
+
+test_that("bib2df() allows for _ in tab name", {
+  bib <- bib2df(system.file("extdata", "bib2df_testfile_4.bib", package = "bib2df"))
+  supplied_col <- "AUTHOR_KEYWORDS"
+  expect_false(any(is.na(bib[supplied_col])))
+})
+
+context("Issue #31")
+
+test_that("Issue #31", {
+  bib <- bib2df(system.file("extdata", "bib2df_testfile_issue_31.bib", package = "bib2df"),
+                merge_lines = TRUE)
+  expect_false(is.na(bib$AUTHOR[1]))
+  expect_false(identical(bib$AUTHOR[1], ""))
+  expect_false(is.na(bib$TITLE[1]))
+  expect_false(identical(bib$TITLE[1], ""))
+  expect_false(is.na(bib$ABSTRACT[1]))
+  expect_false(identical(bib$ABSTRACT[1], ""))
+})

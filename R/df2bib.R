@@ -3,9 +3,13 @@
 #' @param x \code{tibble}, in the format as returned by \code{\link{bib2df}}.
 #' @param file character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).
 #' @param append logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.
+#' @param allfields logical, if \code{TRUE} (default), the resulting bib output
+#' will include all the BibTeX fields contained in the df object. If \code{FALSE}
+#' only the fields with text will be included in the resulting bib object
 #' @return \code{file} as a character string, invisibly.
 #' @author Thomas J. Leeper
-#' @references \url{http://www.bibtex.org/Format/}
+#' @author Gianluca Baio
+#' @references \url{https://www.bibtex.org/Format/}
 #' @examples
 #' # Read from .bib file:
 #' path <- system.file("extdata", "bib2df_testfile_3.bib", package = "bib2df")
@@ -19,7 +23,7 @@
 #' # df2bib(bib, bibFile, append = TRUE)
 #' @seealso \code{\link{bib2df}}
 #' @export
-df2bib <- function(x, file = "", append = FALSE) {
+df2bib <- function(x, file = "", append = FALSE, allfields = TRUE) {
 
   if (!is.character(file)) {
     stop("Invalid file path: Non-character supplied.", call. = FALSE)
@@ -43,7 +47,8 @@ df2bib <- function(x, file = "", append = FALSE) {
     x$AUTHOR[df_elements] <- lapply(x$AUTHOR[df_elements], trimws)
   }
 
-  names(x) <- capitalize(names(x))
+  #names(x) <- capitalize(names(x))
+  names(x) <- toupper(names(x))
   fields <- lapply(seq_len(nrow(x)), function(r) {
     rowfields <- rep(list(character(0)), ncol(x))
     names(rowfields) <- names(x)
@@ -52,27 +57,40 @@ df2bib <- function(x, file = "", append = FALSE) {
       if (is.list(f)) {
         f <- unlist(f)
       }
-      rowfields[[i]] <- if (!length(f) || is.na(f)) {
+      rowfields[[i]] <- if (!length(f) | any(is.na(f))) {
           character(0L)
-        } else if (names(x)[i] %in% c("Author", "Editor")) {
+        } else if (names(x)[i] %in% c("AUTHOR", "EDITOR")) {
           paste(f, collapse = " and ")
         } else {
           paste0(f, collapse = ", ")
         }
     }
     rowfields <- rowfields[lengths(rowfields) > 0]
-    rowfields <- rowfields[!names(rowfields) %in% c("Category", "Bibtexkey")]
-    paste0("  ",
-           names(rowfields),
-           " = {",
-           unname(unlist(rowfields)),
-           "}",
-           collapse = ",\n")
+    rowfields <- rowfields[!names(rowfields) %in% c("CATEGORY", "BIBTEXKEY")]
+    ######################################################################################
+    # This only uses the non-empty fields for the bib file (adds '[nzchar(rowfields)]')
+    # if 'allfields' is set to FALSE
+    if(allfields) {
+      paste0("  ",
+             names(rowfields),
+             " = {",
+             unname(unlist(rowfields)),
+             "}",
+             collapse = ",\n")
+    } else {
+      paste0("  ",
+             names(rowfields[nzchar(rowfields)]),
+             " = {",
+             unname(unlist(rowfields[nzchar(rowfields)])),
+             "}",
+             collapse = ",\n")
+    }
+    ######################################################################################
   })
   cat(paste0("@",
-             capitalize(x$Category),
+             capitalize(x$CATEGORY),
              "{",
-             x$Bibtexkey,
+             x$BIBTEXKEY,
              ",\n",
              unlist(fields),
              "\n}\n",
